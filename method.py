@@ -35,15 +35,15 @@ def generate_data(file_name, m, k, seed):
     global _n, _w
     _n = 10
     _w = UserCF.user_similarity(train)
-    # _w = user_cf.user_similarity_iif(train)
-    # _w = item_cf.item_similarity(train)
-    # _w = item_cf.item_similarity_norm(train)
-    # _w = item_cf.item_similarity_iuf(train)
+    # _w = UserCF.user_similarity_iif(train)
+    # _w = ItemCF.item_similarity(train)
+    # _w = ItemCF.item_similarity_norm(train)
+    # _w = ItemCF.item_similarity_iuf(train)
 
 
 def get_recommendation(user):
     return UserCF.recommend(user, _n, train, _w, 80)
-    # return item_cf.recommend(user, _n, train, _w, 10)
+    # return ItemCF.recommend(user, _n, train, _w, 10)
 
 
 """
