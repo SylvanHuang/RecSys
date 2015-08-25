@@ -17,22 +17,22 @@ def user_similarity(train):
     # build inverse table for item_users
     item_users = {}
     for user, items in train.iteritems():
-        for item in items.iterkeys():
-            item_users.setdefault(item, set())
-            item_users[item].add(user)
+        for item, rating in items.iteritems():
+            item_users.setdefault(item, {})
+            item_users[item][user] = rating
     # calculate co-rated items between users
     c = {}
     n = {}
     for users in item_users.itervalues():
-        for u in users:
+        for u, ru in users.iteritems():
             n.setdefault(u, 0)
-            n[u] += 1
+            n[u] += ru ** 2
             c.setdefault(u, {})
-            for v in users:
+            for v, rv in users.iteritems():
                 if u == v:
                     continue
                 c[u].setdefault(v, 0)
-                c[u][v] += 1
+                c[u][v] += ru * rv
     # calculate finial similarity matrix W
     w = {}
     for u, related_users in c.iteritems():
@@ -52,22 +52,22 @@ def user_similarity_iif(train):
     # build inverse table for item_users
     item_users = {}
     for user, items in train.iteritems():
-        for item in items.iterkeys():
-            item_users.setdefault(item, set())
-            item_users[item].add(user)
+        for item, rating in items.iteritems():
+            item_users.setdefault(item, {})
+            item_users[item][user] = rating
     # calculate co-rated items between users
     c = {}
     n = {}
     for users in item_users.itervalues():
-        for u in users:
+        for u, ru in users.iteritems():
             n.setdefault(u, 0)
-            n[u] += 1
+            n[u] += ru ** 2
             c.setdefault(u, {})
-            for v in users:
+            for v, rv in users.iteritems():
                 if u == v:
                     continue
                 c[u].setdefault(v, 0)
-                c[u][v] += 1 / math.log(1 + len(users))
+                c[u][v] += ru * rv / math.log(1 + len(users))
     # calculate finial similarity matrix W
     w = {}
     for u, related_users in c.iteritems():
@@ -100,3 +100,21 @@ def recommend(user, n, train, w, k):
             rank.setdefault(i, 0)
             rank[i] += wuv * rvi
     return heapq.nlargest(n, rank.iteritems(), key=operator.itemgetter(1))
+
+
+def recommend_with_rating(user, train, w):
+    rank = {}
+    w_sum = {}
+    ru = train[user]
+    for v, wuv in w[user].iteritems():
+        for i, rvi in train[v].iteritems():
+            if i in ru:
+                # we should filter items user interacted before
+                continue
+            rank.setdefault(i, 0)
+            rank[i] += wuv * rvi
+            w_sum.setdefault(i, 0)
+            w_sum[i] += wuv
+    for item in rank.iterkeys():
+        rank[item] /= w_sum[item]
+    return rank.items()
