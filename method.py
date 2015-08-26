@@ -76,13 +76,18 @@ def generate_data_100k_with_rating(k):
 
 
 def generate_matrix(with_rating=False):
+    """
+    :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
+    """
     # UserCF.user_similarity_cosine(train, iif=False)
     # UserCF.user_similarity_cosine(train, iif=True)
     # UserCF.user_similarity_pearson(train, iif=False)
     # UserCF.user_similarity_pearson(train, iif=True)
     # ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=False)
     # ItemCF.item_similarity_cosine(train, with_rating, norm=True, iuf=False)
-    ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=True)
+    # ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=True)
+    ItemCF.item_similarity_adjusted_cosine(train, with_rating, norm=False, iuf=False)
+    # ItemCF.item_similarity_adjusted_cosine(train, with_rating, norm=False, iuf=True)
     # SlopeOne.item_deviation(train)
 
 
@@ -180,6 +185,9 @@ def popularity():
 
 
 def rmse():
+    """
+    :return: 均方根误差
+    """
     rmse_sum = 0
     hit = 0
     for user in train.iterkeys():
@@ -193,6 +201,9 @@ def rmse():
 
 
 def mae():
+    """
+    :return: 平均绝对误差
+    """
     mae_sum = 0
     hit = 0
     for user in train.iterkeys():

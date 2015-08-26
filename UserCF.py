@@ -23,6 +23,7 @@ def user_similarity_cosine(train, iif=False):
     c = {}
     n = {}
     for users in item_users.itervalues():
+        user_len = len(users)
         for u, ru in users.iteritems():
             n.setdefault(u, 0)
             n[u] += ru ** 2
@@ -31,7 +32,7 @@ def user_similarity_cosine(train, iif=False):
                 if u == v:
                     continue
                 c[u].setdefault(v, 0)
-                c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + len(users))
+                c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + user_len)
     global w
     w = {}
     for u, related_users in c.iteritems():
@@ -78,6 +79,7 @@ def user_similarity_pearson(train, iif=False):
     x = {}
     y = {}
     for users in item_users.itervalues():
+        user_len = len(users)
         for u, ru in users.iteritems():
             c.setdefault(u, {})
             x.setdefault(u, {})
@@ -87,7 +89,7 @@ def user_similarity_pearson(train, iif=False):
                     continue
                 c[u].setdefault(v, 0)
                 c[u][v] += (ru - avr_x[u][v]) * (rv - avr_y[u][v]) if not iif else (ru - avr_x[u][v]) * (
-                    rv - avr_y[u][v]) / math.log(1 + len(users))
+                    rv - avr_y[u][v]) / math.log(1 + user_len)
                 x[u].setdefault(v, 0)
                 x[u][v] += (ru - avr_x[u][v]) ** 2
                 y[u].setdefault(v, 0)
