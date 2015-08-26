@@ -76,24 +76,25 @@ def generate_data_100k_with_rating(k):
 
 
 def generate_matrix(with_rating=False):
-    global _w
-    # _w = UserCF.user_similarity(train)
-    # _w = UserCF.user_similarity_iif(train)
-    _w = ItemCF.item_similarity(train, with_rating)
-    # _w = ItemCF.item_similarity_norm(train, with_rating)
-    # _w = ItemCF.item_similarity_iuf(train, with_rating)
-    # _w = SlopeOne.compute_deviations(train)
+    # UserCF.user_similarity_cosine(train, iif=False)
+    # UserCF.user_similarity_cosine(train, iif=True)
+    # UserCF.user_similarity_pearson(train, iif=False)
+    # UserCF.user_similarity_pearson(train, iif=True)
+    # ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=False)
+    # ItemCF.item_similarity_cosine(train, with_rating, norm=True, iuf=False)
+    ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=True)
+    # SlopeOne.item_deviation(train)
 
 
 def get_recommendation(user):
-    # return UserCF.recommend(user, _n, train, _w, _user_k)
-    return ItemCF.recommend(user, _n, train, _w, _item_k)
+    # return UserCF.recommend(user, _n, train, _user_k)
+    return ItemCF.recommend(user, _n, train, _item_k)
 
 
 def get_recommendation_with_rating(user):
-    # return UserCF.recommend_with_rating(user, train, _w)
-    return ItemCF.recommend_with_rating(user, train, _w)
-    # return SlopeOne.recommend_with_rating(user, train, _w)
+    # return UserCF.recommend_with_rating(user, train)
+    return ItemCF.recommend_with_rating(user, train)
+    # return SlopeOne.recommend_with_rating(user, train)
 
 
 """
@@ -247,6 +248,6 @@ def evaluate_with_rating():
                 hit += 1
                 rmse_sum += (tu[item] - pui) ** 2
                 mae_sum += abs(tu[item] - pui)
-    rmse_value = rmse_sum / hit
+    rmse_value = math.sqrt(rmse_sum / hit)
     mae_value = mae_sum / hit
     return rmse_value, mae_value

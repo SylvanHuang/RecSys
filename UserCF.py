@@ -7,20 +7,19 @@ import math
 import operator
 
 
-def user_similarity(train):
+def user_similarity_cosine(train, iif=False):
     """
     通过余弦相似度计算u和v的兴趣相似度
-    W(u,v) = |N(u) ∩ N(v)| / sqrt(|N(u)||N(v)|)
     :param train: 训练集
-    :return: 用户相似度矩阵
     """
-    # build inverse table for item_users
+    global avr
+    avr = {}
     item_users = {}
     for user, items in train.iteritems():
+        avr[user] = 0  # 余弦相似度不需要计算偏移
         for item, rating in items.iteritems():
             item_users.setdefault(item, {})
             item_users[item][user] = rating
-    # calculate co-rated items between users
     c = {}
     n = {}
     for users in item_users.itervalues():
@@ -32,61 +31,81 @@ def user_similarity(train):
                 if u == v:
                     continue
                 c[u].setdefault(v, 0)
-                c[u][v] += ru * rv
-    # calculate finial similarity matrix W
+                c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + len(users))
+    global w
     w = {}
     for u, related_users in c.iteritems():
         w[u] = {}
         for v, cuv in related_users.iteritems():
             w[u][v] = cuv / math.sqrt(n[u] * n[v])
-    return w
 
 
-def user_similarity_iif(train):
+def user_similarity_pearson(train, iif=False):
     """
-    计算u和v的兴趣相似度，惩罚了用户u和用户v共同兴趣列表中热门物品对他们相似度的影响
-    W(u,v) = ∑(1 / log(1 + |N(i)|)) / sqrt(|N(u)||N(v)|), i ∈ |N(u) ∩ N(v)|
+    通过皮尔逊相关系数计算u和v的兴趣相似度
     :param train: 训练集
-    :return: 用户相似度矩阵
     """
-    # build inverse table for item_users
+    global avr
+    avr = {}
     item_users = {}
     for user, items in train.iteritems():
+        avr[user] = sum(items.itervalues()) / len(items)
         for item, rating in items.iteritems():
             item_users.setdefault(item, {})
             item_users[item][user] = rating
-    # calculate co-rated items between users
-    c = {}
-    n = {}
+    avr_x = {}
+    avr_y = {}
+    tot = {}
     for users in item_users.itervalues():
         for u, ru in users.iteritems():
-            n.setdefault(u, 0)
-            n[u] += ru ** 2
+            avr_x.setdefault(u, {})
+            avr_y.setdefault(u, {})
+            tot.setdefault(u, {})
+            for v, rv in users.iteritems():
+                if u == v:
+                    continue
+                avr_x[u].setdefault(v, 0)
+                avr_x[u][v] += ru
+                avr_y[u].setdefault(v, 0)
+                avr_y[u][v] += rv
+                tot[u].setdefault(v, 0)
+                tot[u][v] += 1
+    for u, related_users in tot.iteritems():
+        for v, cnt in related_users.iteritems():
+            avr_x[u][v] /= cnt
+            avr_y[u][v] /= cnt
+    c = {}
+    x = {}
+    y = {}
+    for users in item_users.itervalues():
+        for u, ru in users.iteritems():
             c.setdefault(u, {})
+            x.setdefault(u, {})
+            y.setdefault(u, {})
             for v, rv in users.iteritems():
                 if u == v:
                     continue
                 c[u].setdefault(v, 0)
-                c[u][v] += ru * rv / math.log(1 + len(users))
-    # calculate finial similarity matrix W
+                c[u][v] += (ru - avr_x[u][v]) * (rv - avr_y[u][v]) if not iif else (ru - avr_x[u][v]) * (
+                    rv - avr_y[u][v]) / math.log(1 + len(users))
+                x[u].setdefault(v, 0)
+                x[u][v] += (ru - avr_x[u][v]) ** 2
+                y[u].setdefault(v, 0)
+                y[u][v] += (rv - avr_y[u][v]) ** 2
+    global w
     w = {}
     for u, related_users in c.iteritems():
         w[u] = {}
         for v, cuv in related_users.iteritems():
-            w[u][v] = cuv / math.sqrt(n[u] * n[v])
-    return w
+            w[u][v] = cuv / math.sqrt(x[u][v] * y[u][v]) if x[u][v] * y[u][v] else 0
 
 
-def recommend(user, n, train, w, k):
+def recommend(user, n, train, k):
     """
-    用户u对物品i的感兴趣程度
-    p(u,i) = ∑(W(u,v) * R(v,i)), v ∈ S(u,k) ∩ N(i)
-    其中S(u,k)包含和用户u兴趣最接近的k个用户，N(i)是对物品i有过行为的用户集合，W(u,v)是用户u和用户v的兴趣相似度
-    R(v,i)代表用户v对物品i的兴趣，因为使用的是单一行为的隐反馈数据，所以所有的rvi=1
+    用户u对物品i评分的可能性预测
     :param user: 用户
     :param train: 训练集
     :param n: 为用户推荐n个物品
-    :param w: 用户相似度矩阵
     :param k: 取和用户u兴趣最接近的k个用户
     :return: 推荐列表
     """
@@ -95,26 +114,32 @@ def recommend(user, n, train, w, k):
     for v, wuv in heapq.nlargest(k, w[user].iteritems(), key=operator.itemgetter(1)):
         for i, rvi in train[v].iteritems():
             if i in ru:
-                # we should filter items user interacted before
                 continue
             rank.setdefault(i, 0)
             rank[i] += wuv * rvi
     return heapq.nlargest(n, rank.iteritems(), key=operator.itemgetter(1))
 
 
-def recommend_with_rating(user, train, w):
+def recommend_with_rating(user, train):
+    """
+    用户u对物品i的评分预测
+    :param user: 用户
+    :param train: 训练集
+    :return: 推荐列表
+    """
     rank = {}
     w_sum = {}
     ru = train[user]
     for v, wuv in w[user].iteritems():
         for i, rvi in train[v].iteritems():
             if i in ru:
-                # we should filter items user interacted before
                 continue
             rank.setdefault(i, 0)
-            rank[i] += wuv * rvi
+            rank[i] += wuv * (rvi - avr[v])
             w_sum.setdefault(i, 0)
-            w_sum[i] += wuv
+            w_sum[i] += abs(wuv)
     for item in rank.iterkeys():
-        rank[item] /= w_sum[item]
+        if w_sum[item]:
+            rank[item] /= w_sum[item]
+        rank[item] += avr[user]
     return rank.items()

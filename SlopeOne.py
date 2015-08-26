@@ -5,7 +5,11 @@ from __future__ import division
 frequency = {}
 
 
-def compute_deviations(train):
+def item_deviation(train):
+    """
+    计算物品i和j的差值
+    :param train: 训练集
+    """
     deviation = {}
     # 获取每位用户的评分数据
     for items in train.itervalues():
@@ -22,15 +26,21 @@ def compute_deviations(train):
                 deviation[i][j] += ri - rj
                 frequency[i].setdefault(j, 0)
                 frequency[i][j] += 1
+    global w
     w = {}
     for i, related_items in deviation.iteritems():
         w[i] = {}
         for j, dij in related_items.iteritems():
             w[i][j] = dij / frequency[i][j]
-    return w
 
 
-def recommend_with_rating(user, train, w):
+def recommend_with_rating(user, train):
+    """
+    用户u对物品i的评分预测
+    :param user: 用户
+    :param train: 训练集
+    :return: 推荐列表
+    """
     rank = {}
     ru = train[user]
     for i, wi in w.iteritems():
