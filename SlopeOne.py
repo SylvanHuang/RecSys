@@ -37,20 +37,6 @@ def recommend_with_rating(user, train):
     :param train: 训练集
     :return: 推荐列表
     """
-    # rank = {}
-    # ru = train[user]
-    # for i, wi in w.iteritems():
-    #     if i in ru:
-    #         continue
-    #     rank[i] = 0
-    #     freq_sum = 0
-    #     for j, ruj in ru.iteritems():
-    #         if j in wi:
-    #             rank[i] += (wi[j] + ruj) * freq[i][j]
-    #             freq_sum += freq[i][j]
-    #     if freq_sum:
-    #         rank[i] /= freq_sum
-    # return rank.items()
     rank = {}
     freq_sum = {}
     ru = train[user]
