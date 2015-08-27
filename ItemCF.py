@@ -143,17 +143,16 @@ def recommend(user, n, train, k):
     rank = {}
     ru = train[user]
     for j, ruj in ru.iteritems():
-        for i, wij in w[j][:k]:
+        for i, wji in w[j][:k]:
             if i in ru:
-                # we should filter items user interacted before
                 continue
             rank.setdefault(i, 0)
-            rank[i] += wij * ruj
+            rank[i] += wji * ruj  # wij == wji
             # rank.setdefault(i, {})
             # rank[i].setdefault("weight", 0)
-            # rank[i]["weight"] += ruj * wij
+            # rank[i]["weight"] += ruj * wji
             # rank[i].setdefault("reason", {})
-            # rank[i]["reason"][j] = ruj * wij
+            # rank[i]["reason"][j] = ruj * wji
     return heapq.nlargest(n, rank.iteritems(), key=operator.itemgetter(1))
 
 
@@ -168,13 +167,13 @@ def recommend_with_rating(user, train):
     w_sum = {}
     ru = train[user]
     for j, ruj in ru.iteritems():
-        for i, wij in w[j]:
+        for i, wji in w[j]:
             if i in ru:
                 continue
             rank.setdefault(i, 0)
-            rank[i] += wij * (ruj - avr[user])
+            rank[i] += wji * (ruj - avr[user])  # wij == wji
             w_sum.setdefault(i, 0)
-            w_sum[i] += abs(wij)
+            w_sum[i] += abs(wji)
     for item in rank.iterkeys():
         if w_sum[item]:
             rank[item] /= w_sum[item]

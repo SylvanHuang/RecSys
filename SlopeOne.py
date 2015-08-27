@@ -2,8 +2,6 @@
 
 from __future__ import division
 
-frequency = {}
-
 
 def item_deviation(train):
     """
@@ -11,27 +9,25 @@ def item_deviation(train):
     :param train: 训练集
     """
     deviation = {}
-    # 获取每位用户的评分数据
+    global freq
+    freq = {}
     for items in train.itervalues():
-        # 对于该用户的每个评分项（歌手、分数）
         for i, ri in items.iteritems():
-            frequency.setdefault(i, {})
+            freq.setdefault(i, {})
             deviation.setdefault(i, {})
-            # 再次遍历该用户的每个评分项
             for j, rj in items.iteritems():
                 if i == j:
                     continue
-                # 将评分的差异保存到变量中
                 deviation[i].setdefault(j, 0)
                 deviation[i][j] += ri - rj
-                frequency[i].setdefault(j, 0)
-                frequency[i][j] += 1
+                freq[i].setdefault(j, 0)
+                freq[i][j] += 1
     global w
     w = {}
     for i, related_items in deviation.iteritems():
         w[i] = {}
         for j, dij in related_items.iteritems():
-            w[i][j] = dij / frequency[i][j]
+            w[i][j] = dij / freq[i][j]
 
 
 def recommend_with_rating(user, train):
@@ -41,16 +37,32 @@ def recommend_with_rating(user, train):
     :param train: 训练集
     :return: 推荐列表
     """
+    # rank = {}
+    # ru = train[user]
+    # for i, wi in w.iteritems():
+    #     if i in ru:
+    #         continue
+    #     rank[i] = 0
+    #     freq_sum = 0
+    #     for j, ruj in ru.iteritems():
+    #         if j in wi:
+    #             rank[i] += (wi[j] + ruj) * freq[i][j]
+    #             freq_sum += freq[i][j]
+    #     if freq_sum:
+    #         rank[i] /= freq_sum
+    # return rank.items()
     rank = {}
+    freq_sum = {}
     ru = train[user]
-    for i, wi in w.iteritems():
-        if i not in ru:
-            rank[i] = 0
-            freq = 0
-            for j, ruj in ru.iteritems():
-                if j in wi:
-                    rank[i] += (wi[j] + ruj) * frequency[i][j]
-                    freq += frequency[i][j]
-            if freq:
-                rank[i] /= freq
+    for j, ruj in ru.iteritems():
+        for i, wji in w[j].iteritems():
+            if i in ru:
+                continue
+            rank.setdefault(i, 0)
+            rank[i] += (ruj - wji) * freq[j][i]  # wij == -wji
+            freq_sum.setdefault(i, 0)
+            freq_sum[i] += freq[j][i]  # freq[i][j] == freq[j][i]，但后者对cache更友好
+    for item in rank.iterkeys():
+        if freq_sum[item]:
+            rank[item] /= freq_sum[item]
     return rank.items()

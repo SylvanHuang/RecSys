@@ -84,8 +84,8 @@ def generate_matrix(with_rating=False):
     # UserCF.user_similarity_pearson(train, iif=False)  # with rating
     # UserCF.user_similarity_pearson(train, iif=True)  # with rating
     # UserCF.user_similarity_log_likelihood(train)  # without rating
-    # ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
-    ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
+    ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=True)  # with rating
@@ -101,8 +101,8 @@ def get_recommendation(user):
 
 def get_recommendation_with_rating(user):
     # return UserCF.recommend_with_rating(user, train)
-    # return ItemCF.recommend_with_rating(user, train)
-    return SlopeOne.recommend_with_rating(user, train)
+    return ItemCF.recommend_with_rating(user, train)
+    # return SlopeOne.recommend_with_rating(user, train)
 
 
 """
