@@ -102,6 +102,65 @@ def user_similarity_pearson(train, iif=False):
             w[u][v] = cuv / math.sqrt(x[u][v] * y[u][v]) if x[u][v] * y[u][v] else 0
 
 
+def user_similarity_log_likelihood(train):
+    """
+    通过对数似然比计算u和v的兴趣相似度
+    :param train: 训练集
+    """
+    item_users = {}
+    for user, items in train.iteritems():
+        for item, rating in items.iteritems():
+            item_users.setdefault(item, {})
+            item_users[item][user] = rating
+    c = {}
+    n = {}
+    for users in item_users.itervalues():
+        for u, ru in users.iteritems():
+            n.setdefault(u, 0)
+            n[u] += ru ** 2
+            c.setdefault(u, {})
+            for v, rv in users.iteritems():
+                if u == v:
+                    continue
+                c[u].setdefault(v, 0)
+                c[u][v] += ru * rv
+    global w
+    w = {}
+    item_len = len(item_users)
+    for u, related_users in c.iteritems():
+        w[u] = {}
+        for v, cuv in related_users.iteritems():
+            w[u][v] = __calc_log_likelihood(cuv, n[u] - cuv, n[v] - cuv, item_len - n[u] - n[v] + cuv)
+
+
+def __calc_log_likelihood(num_both, num_x, num_y, num_none):
+    """
+    :param num_both: x和y共同偏好的数量
+    :param num_x: x单独偏好的数量
+    :param num_y: y单独偏好的数量
+    :param num_none: x和y都不偏好的数量
+    :return: 对数似然比
+    """
+    p1 = num_both / (num_both + num_x)
+    p2 = num_y / (num_y + num_none)
+    p = (num_both + num_y) / (num_both + num_x + num_y + num_none)
+    r1 = 0
+    r2 = 0
+    if 0 < p <= 1:
+        r1 += num_both * math.log(p) + num_y * math.log(p)
+    if 0 <= p < 1:
+        r1 += num_x * math.log(1 - p) + num_none * math.log(1 - p)
+    if 0 < p1 <= 1:
+        r2 += num_both * math.log(p1)
+    if 0 <= p1 < 1:
+        r2 += num_x * math.log(1 - p1)
+    if 0 < p2 <= 1:
+        r2 += num_y * math.log(p2)
+    if 0 <= p2 < 1:
+        r2 += num_none * math.log(1 - p2)
+    return 2 * (r2 - r1)
+
+
 def recommend(user, n, train, k):
     """
     用户u对物品i评分的可能性预测

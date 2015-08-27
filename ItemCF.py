@@ -7,7 +7,7 @@ import math
 import operator
 
 
-def item_similarity_cosine(train, with_rating=False, norm=False, iuf=False):
+def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
     """
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
@@ -42,7 +42,7 @@ def item_similarity_cosine(train, with_rating=False, norm=False, iuf=False):
             w[i].sort(key=operator.itemgetter(1), reverse=True)
 
 
-def item_similarity_adjusted_cosine(train, with_rating=False, norm=False, iuf=False):
+def item_similarity_adjusted_cosine(train, iuf=False):
     """
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
@@ -70,13 +70,65 @@ def item_similarity_adjusted_cosine(train, with_rating=False, norm=False, iuf=Fa
         w[i] = []
         for j, cij in related_items.iteritems():
             w[i].append([j, cij / math.sqrt(n[i] * n[j]) if n[i] * n[j] else 0])
+
+
+def item_similarity__log_likelihood(train, norm=False):
+    """
+    通过对数似然比计算物品i和j的相似度
+    :param train: 训练集
+    """
+    c = {}
+    n = {}
+    for user, items in train.iteritems():
+        for i, ri in items.iteritems():
+            n.setdefault(i, 0)
+            n[i] += ri ** 2
+            c.setdefault(i, {})
+            for j, rj in items.iteritems():
+                if i == j:
+                    continue
+                c[i].setdefault(j, 0)
+                c[i][j] += ri * rj
+    global w
+    w = {}
+    user_len = len(train)
+    for i, related_items in c.iteritems():
+        w[i] = []
+        for j, cij in related_items.iteritems():
+            w[i].append([j, __calc_log_likelihood(cij, n[i] - cij, n[j] - cij, user_len - n[i] - n[j] + cij)])
         if norm:
-            wmax_abs = max(abs(max(item[1] for item in w[i])), abs(min(item[1] for item in w[i])))
-            if wmax_abs:
-                for item in w[i]:
-                    item[1] /= wmax_abs
-        if not with_rating:
-            w[i].sort(key=operator.itemgetter(1), reverse=True)
+            wmax = max(item[1] for item in w[i])
+            for item in w[i]:
+                item[1] /= wmax
+        w[i].sort(key=operator.itemgetter(1), reverse=True)
+
+
+def __calc_log_likelihood(num_both, num_x, num_y, num_none):
+    """
+    :param num_both: x和y共同偏好的数量
+    :param num_x: x单独偏好的数量
+    :param num_y: y单独偏好的数量
+    :param num_none: x和y都不偏好的数量
+    :return: 对数似然比
+    """
+    p1 = num_both / (num_both + num_x)
+    p2 = num_y / (num_y + num_none)
+    p = (num_both + num_y) / (num_both + num_x + num_y + num_none)
+    r1 = 0
+    r2 = 0
+    if 0 < p <= 1:
+        r1 += num_both * math.log(p) + num_y * math.log(p)
+    if 0 <= p < 1:
+        r1 += num_x * math.log(1 - p) + num_none * math.log(1 - p)
+    if 0 < p1 <= 1:
+        r2 += num_both * math.log(p1)
+    if 0 <= p1 < 1:
+        r2 += num_x * math.log(1 - p1)
+    if 0 < p2 <= 1:
+        r2 += num_y * math.log(p2)
+    if 0 <= p2 < 1:
+        r2 += num_none * math.log(1 - p2)
+    return 2 * (r2 - r1)
 
 
 def recommend(user, n, train, k):

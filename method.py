@@ -79,16 +79,19 @@ def generate_matrix(with_rating=False):
     """
     :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
     """
-    # UserCF.user_similarity_cosine(train, iif=False)
-    # UserCF.user_similarity_cosine(train, iif=True)
-    # UserCF.user_similarity_pearson(train, iif=False)
-    # UserCF.user_similarity_pearson(train, iif=True)
-    # ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=False)
-    # ItemCF.item_similarity_cosine(train, with_rating, norm=True, iuf=False)
-    # ItemCF.item_similarity_cosine(train, with_rating, norm=False, iuf=True)
-    ItemCF.item_similarity_adjusted_cosine(train, with_rating, norm=False, iuf=False)
-    # ItemCF.item_similarity_adjusted_cosine(train, with_rating, norm=False, iuf=True)
-    # SlopeOne.item_deviation(train)
+    # UserCF.user_similarity_cosine(train, iif=False)  # with/without rating
+    # UserCF.user_similarity_cosine(train, iif=True)  # with/without rating
+    # UserCF.user_similarity_pearson(train, iif=False)  # with rating
+    # UserCF.user_similarity_pearson(train, iif=True)  # with rating
+    # UserCF.user_similarity_log_likelihood(train)  # without rating
+    # ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
+    # ItemCF.item_similarity_adjusted_cosine(train, iuf=True)  # with rating
+    # ItemCF.item_similarity__log_likelihood(train, norm=False)  # without rating
+    # ItemCF.item_similarity__log_likelihood(train, norm=True)  # without rating
+    # SlopeOne.item_deviation(train)  # with rating
 
 
 def get_recommendation(user):
@@ -98,8 +101,8 @@ def get_recommendation(user):
 
 def get_recommendation_with_rating(user):
     # return UserCF.recommend_with_rating(user, train)
-    return ItemCF.recommend_with_rating(user, train)
-    # return SlopeOne.recommend_with_rating(user, train)
+    # return ItemCF.recommend_with_rating(user, train)
+    return SlopeOne.recommend_with_rating(user, train)
 
 
 """
@@ -184,7 +187,7 @@ def popularity():
     return popularity_sum / count
 
 
-def rmse():
+def RMSE():
     """
     :return: 均方根误差
     """
@@ -200,7 +203,7 @@ def rmse():
     return math.sqrt(rmse_sum / hit)
 
 
-def mae():
+def MAE():
     """
     :return: 平均绝对误差
     """
@@ -214,6 +217,24 @@ def mae():
                 mae_sum += abs(tu[item] - pui)
                 hit += 1
     return mae_sum / hit
+
+
+def MAP():
+    """
+    :return: 平均准确率
+    """
+    map_sum = 0
+    for user in train.iterkeys():
+        hit = 0
+        count = 0
+        tu = test.get(user, {})
+        rank = get_recommendation(user)
+        for index, item in enumerate(rank):
+            if item[0] in tu:
+                hit += 1
+                count += hit / (index + 1)
+        map_sum += count / len(rank)
+    return map_sum / len(train)
 
 
 def evaluate():
