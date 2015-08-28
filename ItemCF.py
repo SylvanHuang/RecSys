@@ -7,6 +7,41 @@ import math
 import operator
 
 
+def item_similarity_jaccard(train, norm=False, iuf=False, with_rating=False):
+    """
+    通过Jaccard相似度计算物品i和j的相似度
+    :param train: 训练集
+    """
+    global avr
+    avr = {}
+    c = {}
+    n = {}
+    for user, items in train.iteritems():
+        item_len = len(items)
+        avr[user] = 0  # Jaccard相似度不需要计算偏移
+        for i, ri in items.iteritems():
+            n.setdefault(i, 0)
+            n[i] += ri ** 2
+            c.setdefault(i, {})
+            for j, rj in items.iteritems():
+                if i == j:
+                    continue
+                c[i].setdefault(j, 0)
+                c[i][j] += ri * rj if not iuf else ri * rj / math.log(1 + item_len)
+    global w
+    w = {}
+    for i, related_items in c.iteritems():
+        w[i] = []
+        for j, cij in related_items.iteritems():
+            w[i].append([j, cij / (n[i] + n[j] - cij)])
+        if norm:
+            wmax = max(item[1] for item in w[i])
+            for item in w[i]:
+                item[1] /= wmax
+        if not with_rating:
+            w[i].sort(key=operator.itemgetter(1), reverse=True)
+
+
 def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
     """
     通过余弦相似度计算物品i和j的相似度

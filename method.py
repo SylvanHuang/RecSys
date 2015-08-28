@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from __future__ import division
 
 import math
@@ -79,11 +80,16 @@ def generate_matrix(with_rating=False):
     """
     :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
     """
+    # UserCF.user_similarity_jaccard(train, iif=False)  # with/without rating
+    # UserCF.user_similarity_jaccard(train, iif=True)  # with/without rating
     # UserCF.user_similarity_cosine(train, iif=False)  # with/without rating
     # UserCF.user_similarity_cosine(train, iif=True)  # with/without rating
     # UserCF.user_similarity_pearson(train, iif=False)  # with rating
     # UserCF.user_similarity_pearson(train, iif=True)  # with rating
     # UserCF.user_similarity_log_likelihood(train)  # without rating
+    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating

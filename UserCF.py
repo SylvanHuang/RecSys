@@ -7,6 +7,40 @@ import math
 import operator
 
 
+def user_similarity_jaccard(train, iif=False):
+    """
+    通过Jaccard相似度计算u和v的兴趣相似度
+    :param train: 训练集
+    """
+    global avr
+    avr = {}
+    item_users = {}
+    for user, items in train.iteritems():
+        avr[user] = 0  # Jarccard相似度不需要计算偏移
+        for item, rating in items.iteritems():
+            item_users.setdefault(item, {})
+            item_users[item][user] = rating
+    c = {}
+    n = {}
+    for users in item_users.itervalues():
+        user_len = len(users)
+        for u, ru in users.iteritems():
+            n.setdefault(u, 0)
+            n[u] += ru ** 2
+            c.setdefault(u, {})
+            for v, rv in users.iteritems():
+                if u == v:
+                    continue
+                c[u].setdefault(v, 0)
+                c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + user_len)
+    global w
+    w = {}
+    for u, related_users in c.iteritems():
+        w[u] = {}
+        for v, cuv in related_users.iteritems():
+            w[u][v] = cuv / (n[u] + n[v] - cuv)
+
+
 def user_similarity_cosine(train, iif=False):
     """
     通过余弦相似度计算u和v的兴趣相似度
