@@ -195,7 +195,7 @@ def __calc_log_likelihood(num_both, num_x, num_y, num_none):
     return 2 * (r2 - r1)
 
 
-def recommend(user, n, train, k):
+def recommend(user, train, n, k):
     """
     用户u对物品i评分的可能性预测
     :param user: 用户
@@ -237,4 +237,4 @@ def recommend_with_rating(user, train):
         if w_sum[item]:
             rank[item] /= w_sum[item]
         rank[item] += avr[user]
-    return rank.items()
+    return rank.iteritems()

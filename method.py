@@ -10,6 +10,13 @@ import ItemCF
 import SlopeOne
 import UserCF
 
+try:
+    import SVD
+except ImportError:
+    pass
+except NotImplementedError:
+    pass
+
 
 def generate_data_1m(m, k, seed):
     """
@@ -26,16 +33,41 @@ def generate_data_1m(m, k, seed):
     random.seed(seed)
     for line in open("ml-1m/ratings.dat", "r"):
         user, item, rating, _ = line.split('::')
+        user, item, rating = int(user), int(item), int(rating)
         if random.randint(0, m) == k:
             test.setdefault(user, {})
-            test[user][item] = 1  # int(rating)
+            test[user][item] = 1  # rating
         else:
             train.setdefault(user, {})
-            train[user][item] = 1  # int(rating)
+            train[user][item] = 1  # rating
     global _n, _user_k, _item_k
     _n = 10
     _user_k = 80
     _item_k = 10
+
+
+def generate_data_1m_with_rating(m, k, seed):
+    """
+    将用户行为数据集按照均匀分布随机分成m份
+    挑选1份作为测试集
+    将剩下的m-1份作为训练集
+    :param m: 分割的份数
+    :param k: 随机参数，0≤k<M
+    :param seed: 随机seed
+    """
+    global train, test
+    train = {}
+    test = {}
+    random.seed(seed)
+    for line in open("ml-1m/ratings.dat", "r"):
+        user, item, rating, _ = line.split('::')
+        user, item, rating = int(user), int(item), int(rating)
+        if random.randint(0, m) == k:
+            test.setdefault(user, {})
+            test[user][item] = rating
+        else:
+            train.setdefault(user, {})
+            train[user][item] = rating
 
 
 def generate_data_100k(k):
@@ -47,12 +79,14 @@ def generate_data_100k(k):
     test = {}
     for line in open("ml-100k/u%s.base" % k, "r"):
         user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
         train.setdefault(user, {})
-        train[user][item] = 1  # int(rating)
+        train[user][item] = 1  # rating
     for line in open("ml-100k/u%s.test" % k, "r"):
         user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
         test.setdefault(user, {})
-        test[user][item] = 1  # int(rating)
+        test[user][item] = 1  # rating
     global _n, _user_k, _item_k
     _n = 10
     _user_k = 50
@@ -68,12 +102,14 @@ def generate_data_100k_with_rating(k):
     test = {}
     for line in open("ml-100k/u%s.base" % k, "r"):
         user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
         train.setdefault(user, {})
-        train[user][item] = int(rating)
+        train[user][item] = rating
     for line in open("ml-100k/u%s.test" % k, "r"):
         user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
         test.setdefault(user, {})
-        test[user][item] = int(rating)
+        test[user][item] = rating
 
 
 def generate_matrix(with_rating=False):
@@ -87,10 +123,10 @@ def generate_matrix(with_rating=False):
     # UserCF.user_similarity_pearson(train, iif=False)  # with rating
     # UserCF.user_similarity_pearson(train, iif=True)  # with rating
     # UserCF.user_similarity_log_likelihood(train)  # without rating
-    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
-    ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
@@ -98,17 +134,19 @@ def generate_matrix(with_rating=False):
     # ItemCF.item_similarity__log_likelihood(train, norm=False)  # without rating
     # ItemCF.item_similarity__log_likelihood(train, norm=True)  # without rating
     # SlopeOne.item_deviation(train)  # with rating
+    # SVD.train_matrix_factorization(train)  # with rating
 
 
 def get_recommendation(user):
-    # return UserCF.recommend(user, _n, train, _user_k)
-    return ItemCF.recommend(user, _n, train, _item_k)
+    # return UserCF.recommend(user, train, _n, _user_k)
+    return ItemCF.recommend(user, train, _n, _item_k)
 
 
 def get_recommendation_with_rating(user):
     # return UserCF.recommend_with_rating(user, train)
     return ItemCF.recommend_with_rating(user, train)
     # return SlopeOne.recommend_with_rating(user, train)
+    # return SVD.recommend_with_rating(user, train)
 
 
 """

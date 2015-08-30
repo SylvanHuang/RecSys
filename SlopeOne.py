@@ -51,4 +51,4 @@ def recommend_with_rating(user, train):
     for item in rank.iterkeys():
         if freq_sum[item]:
             rank[item] /= freq_sum[item]
-    return rank.items()
+    return rank.iteritems()
