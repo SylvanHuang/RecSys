@@ -14,7 +14,6 @@ def train_matrix_factorization(train, k=30, step=25, gamma=0.04, Lambda=0.15):
     _bi = {}
     _pu = {}
     _qi = {}
-    mat = []
     _movies = set()
     _avr = 0
     tot = 0
@@ -22,7 +21,6 @@ def train_matrix_factorization(train, k=30, step=25, gamma=0.04, Lambda=0.15):
         _bu.setdefault(user, 0)
         _pu.setdefault(user, numpy.random.random((_k, 1)) * 0.1 * (numpy.sqrt(_k)))
         for item, rating in items.iteritems():
-            mat.append((user, item, rating))
             _movies.add(item)
             _bi.setdefault(item, 0)
             _qi.setdefault(item, numpy.random.random((_k, 1)) * 0.1 * (numpy.sqrt(_k)))

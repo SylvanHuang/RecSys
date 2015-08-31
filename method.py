@@ -126,7 +126,7 @@ def generate_matrix(with_rating=False):
     # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
-    ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
@@ -134,7 +134,7 @@ def generate_matrix(with_rating=False):
     # ItemCF.item_similarity__log_likelihood(train, norm=False)  # without rating
     # ItemCF.item_similarity__log_likelihood(train, norm=True)  # without rating
     # SlopeOne.item_deviation(train)  # with rating
-    # SVD.train_matrix_factorization(train)  # with rating
+    SVD.train_matrix_factorization(train)  # with rating
 
 
 def get_recommendation(user):
@@ -144,9 +144,9 @@ def get_recommendation(user):
 
 def get_recommendation_with_rating(user):
     # return UserCF.recommend_with_rating(user, train)
-    return ItemCF.recommend_with_rating(user, train)
+    # return ItemCF.recommend_with_rating(user, train)
     # return SlopeOne.recommend_with_rating(user, train)
-    # return SVD.recommend_with_rating(user, train)
+    return SVD.recommend_with_rating(user, train)
 
 
 """
