@@ -74,6 +74,6 @@ def test1m_with_rating():
 
 if __name__ == '__main__':
     # test100k()
-    # test100k_with_rating()
-    test1m()
+    test100k_with_rating()
+    # test1m()
     # test1m_with_rating()

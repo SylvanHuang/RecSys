@@ -12,13 +12,13 @@ def item_similarity_jaccard(train, norm=False, iuf=False, with_rating=False):
     通过Jaccard相似度计算物品i和j的相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     c = {}
     n = {}
     for user, items in train.iteritems():
         item_len = len(items)
-        avr[user] = 0  # Jaccard相似度不需要计算偏移
+        _avr[user] = 0  # Jaccard相似度不需要计算偏移
         for i, ri in items.iteritems():
             n.setdefault(i, 0)
             n[i] += ri ** 2
@@ -28,18 +28,18 @@ def item_similarity_jaccard(train, norm=False, iuf=False, with_rating=False):
                     continue
                 c[i].setdefault(j, 0)
                 c[i][j] += ri * rj if not iuf else ri * rj / math.log(1 + item_len)
-    global w
-    w = {}
+    global _w
+    _w = {}
     for i, related_items in c.iteritems():
-        w[i] = []
+        _w[i] = []
         for j, cij in related_items.iteritems():
-            w[i].append([j, cij / (n[i] + n[j] - cij)])
+            _w[i].append([j, cij / (n[i] + n[j] - cij)])
         if norm:
-            wmax = max(item[1] for item in w[i])
-            for item in w[i]:
+            wmax = max(item[1] for item in _w[i])
+            for item in _w[i]:
                 item[1] /= wmax
         if not with_rating:
-            w[i].sort(key=operator.itemgetter(1), reverse=True)
+            _w[i].sort(key=operator.itemgetter(1), reverse=True)
 
 
 def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
@@ -47,13 +47,13 @@ def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     c = {}
     n = {}
     for user, items in train.iteritems():
         item_len = len(items)
-        avr[user] = 0  # 余弦相似度不需要计算偏移
+        _avr[user] = 0  # 余弦相似度不需要计算偏移
         for i, ri in items.iteritems():
             n.setdefault(i, 0)
             n[i] += ri ** 2
@@ -63,18 +63,18 @@ def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
                     continue
                 c[i].setdefault(j, 0)
                 c[i][j] += ri * rj if not iuf else ri * rj / math.log(1 + item_len)
-    global w
-    w = {}
+    global _w
+    _w = {}
     for i, related_items in c.iteritems():
-        w[i] = []
+        _w[i] = []
         for j, cij in related_items.iteritems():
-            w[i].append([j, cij / math.sqrt(n[i] * n[j])])
+            _w[i].append([j, cij / math.sqrt(n[i] * n[j])])
         if norm:
-            wmax = max(item[1] for item in w[i])
-            for item in w[i]:
+            wmax = max(item[1] for item in _w[i])
+            for item in _w[i]:
                 item[1] /= wmax
         if not with_rating:
-            w[i].sort(key=operator.itemgetter(1), reverse=True)
+            _w[i].sort(key=operator.itemgetter(1), reverse=True)
 
 
 def item_similarity_adjusted_cosine(train, iuf=False):
@@ -82,29 +82,29 @@ def item_similarity_adjusted_cosine(train, iuf=False):
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     c = {}
     n = {}
     for user, items in train.iteritems():
         item_len = len(items)
-        avr[user] = sum(items.itervalues()) / item_len
+        _avr[user] = sum(items.itervalues()) / item_len
         for i, ri in items.iteritems():
             n.setdefault(i, 0)
-            n[i] += (ri - avr[user]) ** 2
+            n[i] += (ri - _avr[user]) ** 2
             c.setdefault(i, {})
             for j, rj in items.iteritems():
                 if i == j:
                     continue
                 c[i].setdefault(j, 0)
-                c[i][j] += (ri - avr[user]) * (rj - avr[user]) if not iuf else (ri - avr[user]) * (
-                    rj - avr[user]) / math.log(1 + item_len)
-    global w
-    w = {}
+                c[i][j] += (ri - _avr[user]) * (rj - _avr[user]) if not iuf else (ri - _avr[user]) * (
+                    rj - _avr[user]) / math.log(1 + item_len)
+    global _w
+    _w = {}
     for i, related_items in c.iteritems():
-        w[i] = []
+        _w[i] = []
         for j, cij in related_items.iteritems():
-            w[i].append([j, cij / math.sqrt(n[i] * n[j]) if n[i] * n[j] else 0])
+            _w[i].append([j, cij / math.sqrt(n[i] * n[j]) if n[i] * n[j] else 0])
 
 
 def item_similarity__log_likelihood(train, norm=False):
@@ -124,18 +124,18 @@ def item_similarity__log_likelihood(train, norm=False):
                     continue
                 c[i].setdefault(j, 0)
                 c[i][j] += ri * rj
-    global w
-    w = {}
+    global _w
+    _w = {}
     user_len = len(train)
     for i, related_items in c.iteritems():
-        w[i] = []
+        _w[i] = []
         for j, cij in related_items.iteritems():
-            w[i].append([j, __calc_log_likelihood(cij, n[i] - cij, n[j] - cij, user_len - n[i] - n[j] + cij)])
+            _w[i].append([j, __calc_log_likelihood(cij, n[i] - cij, n[j] - cij, user_len - n[i] - n[j] + cij)])
         if norm:
-            wmax = max(item[1] for item in w[i])
-            for item in w[i]:
+            wmax = max(item[1] for item in _w[i])
+            for item in _w[i]:
                 item[1] /= wmax
-        w[i].sort(key=operator.itemgetter(1), reverse=True)
+        _w[i].sort(key=operator.itemgetter(1), reverse=True)
 
 
 def __calc_log_likelihood(num_both, num_x, num_y, num_none):
@@ -178,7 +178,7 @@ def recommend(user, train, n, k):
     rank = {}
     ru = train[user]
     for j, ruj in ru.iteritems():
-        for i, wji in w[j][:k]:
+        for i, wji in _w[j][:k]:
             if i in ru:
                 continue
             rank.setdefault(i, 0)
@@ -202,15 +202,15 @@ def recommend_with_rating(user, train):
     w_sum = {}
     ru = train[user]
     for j, ruj in ru.iteritems():
-        for i, wji in w[j]:
+        for i, wji in _w[j]:
             if i in ru:
                 continue
             rank.setdefault(i, 0)
-            rank[i] += wji * (ruj - avr[user])  # wij == wji
+            rank[i] += wji * (ruj - _avr[user])  # wij == wji
             w_sum.setdefault(i, 0)
             w_sum[i] += abs(wji)
     for item in rank.iterkeys():
         if w_sum[item]:
             rank[item] /= w_sum[item]
-        rank[item] += avr[user]
+        rank[item] += _avr[user]
     return rank.iteritems()

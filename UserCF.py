@@ -12,11 +12,11 @@ def user_similarity_jaccard(train, iif=False):
     通过Jaccard相似度计算u和v的兴趣相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     item_users = {}
     for user, items in train.iteritems():
-        avr[user] = 0  # Jarccard相似度不需要计算偏移
+        _avr[user] = 0  # Jarccard相似度不需要计算偏移
         for item, rating in items.iteritems():
             item_users.setdefault(item, {})
             item_users[item][user] = rating
@@ -33,12 +33,12 @@ def user_similarity_jaccard(train, iif=False):
                     continue
                 c[u].setdefault(v, 0)
                 c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + user_len)
-    global w
-    w = {}
+    global _w
+    _w = {}
     for u, related_users in c.iteritems():
-        w[u] = {}
+        _w[u] = {}
         for v, cuv in related_users.iteritems():
-            w[u][v] = cuv / (n[u] + n[v] - cuv)
+            _w[u][v] = cuv / (n[u] + n[v] - cuv)
 
 
 def user_similarity_cosine(train, iif=False):
@@ -46,11 +46,11 @@ def user_similarity_cosine(train, iif=False):
     通过余弦相似度计算u和v的兴趣相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     item_users = {}
     for user, items in train.iteritems():
-        avr[user] = 0  # 余弦相似度不需要计算偏移
+        _avr[user] = 0  # 余弦相似度不需要计算偏移
         for item, rating in items.iteritems():
             item_users.setdefault(item, {})
             item_users[item][user] = rating
@@ -67,12 +67,12 @@ def user_similarity_cosine(train, iif=False):
                     continue
                 c[u].setdefault(v, 0)
                 c[u][v] += ru * rv if not iif else ru * rv / math.log(1 + user_len)
-    global w
-    w = {}
+    global _w
+    _w = {}
     for u, related_users in c.iteritems():
-        w[u] = {}
+        _w[u] = {}
         for v, cuv in related_users.iteritems():
-            w[u][v] = cuv / math.sqrt(n[u] * n[v])
+            _w[u][v] = cuv / math.sqrt(n[u] * n[v])
 
 
 def user_similarity_pearson(train, iif=False):
@@ -80,11 +80,11 @@ def user_similarity_pearson(train, iif=False):
     通过皮尔逊相关系数计算u和v的兴趣相似度
     :param train: 训练集
     """
-    global avr
-    avr = {}
+    global _avr
+    _avr = {}
     item_users = {}
     for user, items in train.iteritems():
-        avr[user] = sum(items.itervalues()) / len(items)
+        _avr[user] = sum(items.itervalues()) / len(items)
         for item, rating in items.iteritems():
             item_users.setdefault(item, {})
             item_users[item][user] = rating
@@ -128,12 +128,12 @@ def user_similarity_pearson(train, iif=False):
                 x[u][v] += (ru - avr_x[u][v]) ** 2
                 y[u].setdefault(v, 0)
                 y[u][v] += (rv - avr_y[u][v]) ** 2
-    global w
-    w = {}
+    global _w
+    _w = {}
     for u, related_users in c.iteritems():
-        w[u] = {}
+        _w[u] = {}
         for v, cuv in related_users.iteritems():
-            w[u][v] = cuv / math.sqrt(x[u][v] * y[u][v]) if x[u][v] * y[u][v] else 0
+            _w[u][v] = cuv / math.sqrt(x[u][v] * y[u][v]) if x[u][v] * y[u][v] else 0
 
 
 def user_similarity_log_likelihood(train):
@@ -158,13 +158,13 @@ def user_similarity_log_likelihood(train):
                     continue
                 c[u].setdefault(v, 0)
                 c[u][v] += ru * rv
-    global w
-    w = {}
+    global _w
+    _w = {}
     item_len = len(item_users)
     for u, related_users in c.iteritems():
-        w[u] = {}
+        _w[u] = {}
         for v, cuv in related_users.iteritems():
-            w[u][v] = __calc_log_likelihood(cuv, n[u] - cuv, n[v] - cuv, item_len - n[u] - n[v] + cuv)
+            _w[u][v] = __calc_log_likelihood(cuv, n[u] - cuv, n[v] - cuv, item_len - n[u] - n[v] + cuv)
 
 
 def __calc_log_likelihood(num_both, num_x, num_y, num_none):
@@ -206,7 +206,7 @@ def recommend(user, train, n, k):
     """
     rank = {}
     ru = train[user]
-    for v, wuv in heapq.nlargest(k, w[user].iteritems(), key=operator.itemgetter(1)):
+    for v, wuv in heapq.nlargest(k, _w[user].iteritems(), key=operator.itemgetter(1)):
         for i, rvi in train[v].iteritems():
             if i in ru:
                 continue
@@ -225,16 +225,16 @@ def recommend_with_rating(user, train):
     rank = {}
     w_sum = {}
     ru = train[user]
-    for v, wuv in w[user].iteritems():
+    for v, wuv in _w[user].iteritems():
         for i, rvi in train[v].iteritems():
             if i in ru:
                 continue
             rank.setdefault(i, 0)
-            rank[i] += wuv * (rvi - avr[v])
+            rank[i] += wuv * (rvi - _avr[v])
             w_sum.setdefault(i, 0)
             w_sum[i] += abs(wuv)
     for item in rank.iterkeys():
         if w_sum[item]:
             rank[item] /= w_sum[item]
-        rank[item] += avr[user]
+        rank[item] += _avr[user]
     return rank.iteritems()

@@ -9,25 +9,25 @@ def item_deviation(train):
     :param train: 训练集
     """
     deviation = {}
-    global freq
-    freq = {}
+    global _freq
+    _freq = {}
     for items in train.itervalues():
         for i, ri in items.iteritems():
-            freq.setdefault(i, {})
+            _freq.setdefault(i, {})
             deviation.setdefault(i, {})
             for j, rj in items.iteritems():
                 if i == j:
                     continue
                 deviation[i].setdefault(j, 0)
                 deviation[i][j] += ri - rj
-                freq[i].setdefault(j, 0)
-                freq[i][j] += 1
-    global w
-    w = {}
+                _freq[i].setdefault(j, 0)
+                _freq[i][j] += 1
+    global _w
+    _w = {}
     for i, related_items in deviation.iteritems():
-        w[i] = {}
+        _w[i] = {}
         for j, dij in related_items.iteritems():
-            w[i][j] = dij / freq[i][j]
+            _w[i][j] = dij / _freq[i][j]
 
 
 def recommend_with_rating(user, train):
@@ -41,13 +41,13 @@ def recommend_with_rating(user, train):
     freq_sum = {}
     ru = train[user]
     for j, ruj in ru.iteritems():
-        for i, wji in w[j].iteritems():
+        for i, wji in _w[j].iteritems():
             if i in ru:
                 continue
             rank.setdefault(i, 0)
-            rank[i] += (ruj - wji) * freq[j][i]  # wij == -wji
+            rank[i] += (ruj - wji) * _freq[j][i]  # wij == -wji
             freq_sum.setdefault(i, 0)
-            freq_sum[i] += freq[j][i]  # freq[i][j] == freq[j][i]，但后者对cache更友好
+            freq_sum[i] += _freq[j][i]  # _freq[i][j] == _freq[j][i]，但后者对cache更友好
     for item in rank.iterkeys():
         if freq_sum[item]:
             rank[item] /= freq_sum[item]
