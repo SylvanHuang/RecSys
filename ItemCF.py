@@ -11,6 +11,9 @@ def item_similarity_jaccard(train, norm=False, iuf=False, with_rating=False):
     """
     通过Jaccard相似度计算物品i和j的相似度
     :param train: 训练集
+    :param norm: 是否归一化
+    :param iuf: 是否惩罚热门物品
+    :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
     """
     global _avr
     _avr = {}
@@ -46,6 +49,9 @@ def item_similarity_cosine(train, norm=False, iuf=False, with_rating=False):
     """
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
+    :param norm: 是否归一化
+    :param iuf: 是否惩罚热门物品
+    :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
     """
     global _avr
     _avr = {}
@@ -81,6 +87,7 @@ def item_similarity_adjusted_cosine(train, iuf=False):
     """
     通过余弦相似度计算物品i和j的相似度
     :param train: 训练集
+    :param iuf: 是否惩罚热门物品
     """
     global _avr
     _avr = {}
@@ -111,6 +118,7 @@ def item_similarity__log_likelihood(train, norm=False):
     """
     通过对数似然比计算物品i和j的相似度
     :param train: 训练集
+    :param norm: 是否归一化
     """
     c = {}
     n = {}

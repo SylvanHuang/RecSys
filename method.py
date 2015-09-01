@@ -265,22 +265,22 @@ def MAE():
     return mae_sum / hit
 
 
-def MAP():
-    """
-    :return: 平均准确率
-    """
-    map_sum = 0
-    for user in train.iterkeys():
-        hit = 0
-        count = 0
-        tu = test.get(user, {})
-        rank = get_recommendation(user)
-        for index, item in enumerate(rank):
-            if item[0] in tu:
-                hit += 1
-                count += hit / (index + 1)
-        map_sum += count / len(rank)
-    return map_sum / len(train)
+# def MAP():
+#     """
+#     :return: 平均准确率
+#     """
+#     map_sum = 0
+#     for user in train.iterkeys():
+#         hit = 0
+#         count = 0
+#         tu = test.get(user, {})
+#         rank = get_recommendation(user)
+#         for index, item in enumerate(rank):
+#             if item[0] in tu:
+#                 hit += 1
+#                 count += hit / (index + 1)
+#         map_sum += count / len(rank)
+#     return map_sum / len(train)
 
 
 def evaluate():

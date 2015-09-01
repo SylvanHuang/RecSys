@@ -11,6 +11,7 @@ def user_similarity_jaccard(train, iif=False):
     """
     通过Jaccard相似度计算u和v的兴趣相似度
     :param train: 训练集
+    :param iif: 是否惩罚热门物品
     """
     global _avr
     _avr = {}
@@ -45,6 +46,7 @@ def user_similarity_cosine(train, iif=False):
     """
     通过余弦相似度计算u和v的兴趣相似度
     :param train: 训练集
+    :param iif: 是否惩罚热门物品
     """
     global _avr
     _avr = {}
@@ -79,6 +81,7 @@ def user_similarity_pearson(train, iif=False):
     """
     通过皮尔逊相关系数计算u和v的兴趣相似度
     :param train: 训练集
+    :param iif: 是否惩罚热门物品
     """
     global _avr
     _avr = {}

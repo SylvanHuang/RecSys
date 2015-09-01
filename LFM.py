@@ -7,6 +7,17 @@ import numpy
 
 
 def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=30):
+    """
+    建立隐语义模型，并使用随机梯度下降优化
+    :param train: 训练集
+    :param bias: 是否计算偏移
+    :param svd: 是否使用奇异值分解
+    :param step: 迭代次数
+    :param gamma: 步长
+    :param slow_rate: 步长减缓的系数
+    :param Lambda: 正则化参数
+    :param k: 奇异值分解向量长度
+    """
     global _bias, _svd, _k
     _bias = bias
     _svd = svd
@@ -52,6 +63,12 @@ def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.9
 
 
 def __predict(user, item):
+    """
+    预测用户对单件物品的评分
+    :param user: 用户
+    :param item: 物品
+    :return: 预测值
+    """
     rui = 0
     if _bias:
         _bu.setdefault(user, 0)
