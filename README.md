@@ -1,6 +1,5 @@
 # RecSys
-《推荐系统实践》示例代码
 
-包括了UserCF和ItemCF的完整示例。
+包括UserCF、ItemCF、SlopeOne、LFM等推荐算法的实现
 
-书中部分代码存在缺陷（如无法正常运行，复杂度较高等），在此一并作出修正。
+使用MovieLens数据集测试，测试报告见test100k.md和test1M.md文件
