@@ -49,9 +49,9 @@ def test1m():
         b = method.evaluate()
         for x in xrange(0, 4):
             ans[x] += b[x]
+        print datetime.datetime.now() - start
     for x in xrange(0, 4):
         ans[x] /= 8
-    print ans
     end = datetime.datetime.now()
     print datetime.timedelta(seconds=(end - start).total_seconds() / 8)
 

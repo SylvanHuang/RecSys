@@ -2,6 +2,13 @@
 
 训练集与测试集比例：7:1
 
+测试环境：
+
+- MacBook Pro 2014M (Core i5 2.6GHz, DDR3 1600MHz 8GB)
+- OS X Yosemite 10.10.5
+- PyPy 2.6.0 with GCC 4.2.1 Compatible Apple LLVM 6.1.0 (clang-602.0.53)
+- Python 2.7.9 Stackless 3.1b3 060516 [GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.56)]
+
 只测试了without rating，含义：预测用户是否会给电影评分
 
 参数：

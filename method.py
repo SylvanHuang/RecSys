@@ -18,6 +18,48 @@ except NotImplementedError:
     pass
 
 
+def generate_data_100k(k):
+    """
+    :param k: 数据集编号
+    """
+    global train, test
+    train = {}
+    test = {}
+    for line in open("ml-100k/u%s.base" % k, "r"):
+        user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
+        train.setdefault(user, {})
+        train[user][item] = 1
+    for line in open("ml-100k/u%s.test" % k, "r"):
+        user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
+        test.setdefault(user, {})
+        test[user][item] = 1
+    global _n, _user_k, _item_k
+    _n = 10
+    _user_k = 50
+    _item_k = 10
+
+
+def generate_data_100k_with_rating(k):
+    """
+    :param k: 数据集编号
+    """
+    global train, test
+    train = {}
+    test = {}
+    for line in open("ml-100k/u%s.base" % k, "r"):
+        user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
+        train.setdefault(user, {})
+        train[user][item] = rating
+    for line in open("ml-100k/u%s.test" % k, "r"):
+        user, item, rating, _ = line.split('\t')
+        user, item, rating = int(user), int(item), int(rating)
+        test.setdefault(user, {})
+        test[user][item] = rating
+
+
 def generate_data_1m(m, k, seed):
     """
     将用户行为数据集按照均匀分布随机分成m份
@@ -36,10 +78,10 @@ def generate_data_1m(m, k, seed):
         user, item, rating = int(user), int(item), int(rating)
         if random.randint(0, m) == k:
             test.setdefault(user, {})
-            test[user][item] = 1  # rating
+            test[user][item] = 1
         else:
             train.setdefault(user, {})
-            train[user][item] = 1  # rating
+            train[user][item] = 1
     global _n, _user_k, _item_k
     _n = 10
     _user_k = 80
@@ -68,48 +110,6 @@ def generate_data_1m_with_rating(m, k, seed):
         else:
             train.setdefault(user, {})
             train[user][item] = rating
-
-
-def generate_data_100k(k):
-    """
-    :param k: 数据集编号
-    """
-    global train, test
-    train = {}
-    test = {}
-    for line in open("ml-100k/u%s.base" % k, "r"):
-        user, item, rating, _ = line.split('\t')
-        user, item, rating = int(user), int(item), int(rating)
-        train.setdefault(user, {})
-        train[user][item] = 1  # rating
-    for line in open("ml-100k/u%s.test" % k, "r"):
-        user, item, rating, _ = line.split('\t')
-        user, item, rating = int(user), int(item), int(rating)
-        test.setdefault(user, {})
-        test[user][item] = 1  # rating
-    global _n, _user_k, _item_k
-    _n = 10
-    _user_k = 50
-    _item_k = 10
-
-
-def generate_data_100k_with_rating(k):
-    """
-    :param k: 数据集编号
-    """
-    global train, test
-    train = {}
-    test = {}
-    for line in open("ml-100k/u%s.base" % k, "r"):
-        user, item, rating, _ = line.split('\t')
-        user, item, rating = int(user), int(item), int(rating)
-        train.setdefault(user, {})
-        train[user][item] = rating
-    for line in open("ml-100k/u%s.test" % k, "r"):
-        user, item, rating, _ = line.split('\t')
-        user, item, rating = int(user), int(item), int(rating)
-        test.setdefault(user, {})
-        test[user][item] = rating
 
 
 def generate_matrix(with_rating=False):
