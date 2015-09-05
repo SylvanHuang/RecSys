@@ -52,6 +52,7 @@ def test1m():
         print datetime.datetime.now() - start
     for x in xrange(0, 4):
         ans[x] /= 8
+    print ans
     end = datetime.datetime.now()
     print datetime.timedelta(seconds=(end - start).total_seconds() / 8)
 
