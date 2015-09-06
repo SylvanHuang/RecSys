@@ -60,7 +60,7 @@ def generate_data_100k_with_rating(k):
         test[user][item] = rating
 
 
-def generate_data_1m(m, k, seed):
+def generate_data_1m(m, k, seed=0):
     """
     将用户行为数据集按照均匀分布随机分成m份
     挑选1份作为测试集
@@ -69,10 +69,10 @@ def generate_data_1m(m, k, seed):
     :param k: 随机参数，0≤k<M
     :param seed: 随机seed
     """
+    random.seed(seed)
     global train, test
     train = {}
     test = {}
-    random.seed(seed)
     for line in open("ml-1m/ratings.dat", "r"):
         user, item, rating, _ = line.split('::')
         user, item, rating = int(user), int(item), int(rating)
@@ -88,7 +88,7 @@ def generate_data_1m(m, k, seed):
     _item_k = 10
 
 
-def generate_data_1m_with_rating(m, k, seed):
+def generate_data_1m_with_rating(m, k, seed=0):
     """
     将用户行为数据集按照均匀分布随机分成m份
     挑选1份作为测试集
@@ -97,10 +97,10 @@ def generate_data_1m_with_rating(m, k, seed):
     :param k: 随机参数，0≤k<M
     :param seed: 随机seed
     """
+    random.seed(seed)
     global train, test
     train = {}
     test = {}
-    random.seed(seed)
     for line in open("ml-1m/ratings.dat", "r"):
         user, item, rating, _ = line.split('::')
         user, item, rating = int(user), int(item), int(rating)
@@ -126,7 +126,7 @@ def generate_matrix(with_rating=False):
     # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
-    ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
@@ -135,8 +135,8 @@ def generate_matrix(with_rating=False):
     # ItemCF.item_similarity__log_likelihood(train, norm=True)  # without rating
     # SlopeOne.item_deviation(train)  # with rating
     # LFM.factorization(train, bias=True, svd=False, step=100, gamma=0.01, slow_rate=0.99, Lambda=0.1)  # with rating
-    # LFM.factorization(train, bias=False, svd=True, step=50, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=30)  # with rating
-    # LFM.factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=30)  # with rating
+    LFM.factorization(train, bias=False, svd=True, step=50, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=15)  # with rating
+    # LFM.factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=15)  # with rating
 
 
 def get_recommendation(user):
@@ -146,9 +146,9 @@ def get_recommendation(user):
 
 def get_recommendation_with_rating(user):
     # return UserCF.recommend_with_rating(user, train)
-    return ItemCF.recommend_with_rating(user, train)
+    # return ItemCF.recommend_with_rating(user, train)
     # return SlopeOne.recommend_with_rating(user, train)
-    # return LFM.recommend_with_rating(user, train)
+    return LFM.recommend_with_rating(user, train)
 
 
 """

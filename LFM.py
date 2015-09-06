@@ -6,7 +6,7 @@ from __future__ import division
 import numpy
 
 
-def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, k=30):
+def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, seed=0, k=30):
     """
     建立隐语义模型，并使用随机梯度下降优化
     :param train: 训练集
@@ -18,6 +18,7 @@ def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.9
     :param Lambda: 正则化参数
     :param k: 奇异值分解向量长度
     """
+    numpy.random.seed(seed)
     global _bias, _svd, _k
     _bias = bias
     _svd = svd

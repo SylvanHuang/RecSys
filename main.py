@@ -44,7 +44,7 @@ def test1m():
     start = datetime.datetime.now()
     ans = [0, 0, 0, 0]
     for k in xrange(0, 8):
-        method.generate_data_1m(8, k, 0)
+        method.generate_data_1m(8, k)
         method.generate_matrix()
         b = method.evaluate()
         for x in xrange(0, 4):
@@ -61,7 +61,7 @@ def test1m_with_rating():
     start = datetime.datetime.now()
     ans = [0, 0]
     for k in xrange(1, 6):
-        method.generate_data_1m_with_rating(8, k, 0)
+        method.generate_data_1m_with_rating(8, k)
         method.generate_matrix(with_rating=True)
         b = method.evaluate_with_rating()
         for x in xrange(0, 2):
