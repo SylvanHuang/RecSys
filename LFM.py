@@ -3,10 +3,14 @@
 from __future__ import absolute_import
 from __future__ import division
 
+import heapq
+import operator
+
 import numpy
 
 
-def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, seed=0, k=30):
+def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.93, Lambda=0.1, seed=0, k=30,
+                  with_rating=True):
     """
     建立隐语义模型，并使用随机梯度下降优化
     :param train: 训练集
@@ -23,33 +27,34 @@ def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.9
     _bias = bias
     _svd = svd
     _k = k
-    global _bu, _bi, _pu, _qi, _movies, _avr
+    global _bu, _bi, _pu, _qi, _movie_list, _movie_set, _avr, _tot
     _bu = {}
     _bi = {}
     _pu = {}
     _qi = {}
-    _movies = set()
+    _movie_list = []
     _avr = 0
-    tot = 0
+    _tot = 0
     for user, items in train.iteritems():
         if _bias:
             _bu.setdefault(user, 0)
         if _svd:
             _pu.setdefault(user, numpy.random.random((_k, 1)) * 0.1 * (numpy.sqrt(_k)))
         for item, rating in items.iteritems():
-            _movies.add(item)
+            _movie_list.append(item)
             if _bias:
                 _bi.setdefault(item, 0)
             if _svd:
                 _qi.setdefault(item, numpy.random.random((_k, 1)) * 0.1 * (numpy.sqrt(_k)))
             _avr += rating
-            tot += 1
-    _avr /= tot
+            _tot += 1
+    _movie_set = set(_movie_list)
+    _avr /= _tot
     for _ in xrange(step):
         rmse_sum = 0
         mae_sum = 0
         for user, items in train.iteritems():
-            for item, rating in items.iteritems():
+            for item, rating in items.iteritems() if with_rating else __random_negative_sample(items).iteritems():
                 rui = rating - __predict(user, item)
                 if _bias:
                     _bu[user] += gamma * (rui - Lambda * _bu[user])
@@ -60,7 +65,24 @@ def factorization(train, bias=True, svd=True, step=25, gamma=0.04, slow_rate=0.9
                 rmse_sum += rui ** 2
                 mae_sum += abs(rui)
         gamma *= slow_rate
-        print "step: %s, rmse: %s, mae: %s" % (_ + 1, numpy.sqrt(rmse_sum / tot), mae_sum / tot)
+        print "step: %s, rmse: %s, mae: %s" % (_ + 1, numpy.sqrt(rmse_sum / _tot), mae_sum / _tot)
+
+
+def __random_negative_sample(items):
+    ret = {}
+    for item in items.iterkeys():
+        ret[item] = 1
+    n = 0
+    items_len = len(items)
+    for _ in xrange(items_len * 20):
+        item = _movie_list[int(numpy.random.random() * _tot)]
+        if item in ret:
+            continue
+        ret[item] = 0
+        n += 1
+        if n > items_len * 10:
+            break
+    return ret
 
 
 def __predict(user, item):
@@ -86,6 +108,22 @@ def __predict(user, item):
     return rui
 
 
+def recommend(user, train, n):
+    """
+    用户u对物品i的评分预测
+    :param user: 用户
+    :param train: 训练集
+    :return: 推荐列表
+    """
+    rank = {}
+    ru = train[user]
+    for item in _movie_set:
+        if item in ru:
+            continue
+        rank[item] = __predict(user, item)
+    return heapq.nlargest(n, rank.iteritems(), key=operator.itemgetter(1))
+
+
 def recommend_with_rating(user, train):
     """
     用户u对物品i的评分预测
@@ -95,7 +133,7 @@ def recommend_with_rating(user, train):
     """
     rank = {}
     ru = train[user]
-    for item in _movies:
+    for item in _movie_set:
         if item in ru:
             continue
         rank[item] = __predict(user, item)
