@@ -74,7 +74,11 @@ def test1m_with_rating():
 
 
 if __name__ == '__main__':
-    # test100k()
-    test100k_with_rating()
-    # test1m()
-    # test1m_with_rating()
+    st = datetime.datetime.now()
+    for _ in xrange(5):
+        # test100k()
+        test100k_with_rating()
+        # test1m()
+        # test1m_with_rating()
+    ed = datetime.datetime.now()
+    print datetime.timedelta(seconds=(ed - st).total_seconds() / 25)

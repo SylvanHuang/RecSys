@@ -77,6 +77,42 @@ def user_similarity_cosine(train, iif=False):
             _w[u][v] = cuv / math.sqrt(n[u] * n[v])
 
 
+def user_similarity_adjusted_cosine(train, iif=False):
+    """
+    通过余弦相似度计算u和v的兴趣相似度
+    :param train: 训练集
+    :param iif: 是否惩罚热门物品
+    """
+    global _avr
+    _avr = {}
+    item_users = {}
+    for user, items in train.iteritems():
+        _avr[user] = sum(items.itervalues()) / len(items)
+        for item, rating in items.iteritems():
+            item_users.setdefault(item, {})
+            item_users[item][user] = rating
+    c = {}
+    n = {}
+    for users in item_users.itervalues():
+        user_len = len(users)
+        for u, ru in users.iteritems():
+            n.setdefault(u, 0)
+            n[u] += (ru - _avr[u]) ** 2
+            c.setdefault(u, {})
+            for v, rv in users.iteritems():
+                if u == v:
+                    continue
+                c[u].setdefault(v, 0)
+                c[u][v] += (ru - _avr[u]) * (rv - _avr[v]) if not iif else (ru - _avr[u]) * (rv - _avr[v]) / math.log(
+                    1 + user_len)
+    global _w
+    _w = {}
+    for u, related_users in c.iteritems():
+        _w[u] = {}
+        for v, cuv in related_users.iteritems():
+            _w[u][v] = cuv / math.sqrt(n[u] * n[v]) if n[u] * n[v] else 0
+
+
 def user_similarity_pearson(train, iif=False):
     """
     通过皮尔逊相关系数计算u和v的兴趣相似度

@@ -12,9 +12,7 @@ import UserCF
 
 try:
     import LFM
-except ImportError:
-    pass
-except NotImplementedError:
+except:
     pass
 
 
@@ -114,21 +112,23 @@ def generate_data_1m_with_rating(m, k, seed=0):
 
 def generate_matrix(with_rating=False):
     """
-    :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1
+    :param with_rating: 训练集是否包括rating，True则rating范围为1~5，否则为0或1（只对部分算法有效）
     """
-    # UserCF.user_similarity_jaccard(train, iif=False)  # with/without rating
-    # UserCF.user_similarity_jaccard(train, iif=True)  # with/without rating
     # UserCF.user_similarity_cosine(train, iif=False)  # with/without rating
     # UserCF.user_similarity_cosine(train, iif=True)  # with/without rating
+    # UserCF.user_similarity_jaccard(train, iif=False)  # with/without rating
+    # UserCF.user_similarity_jaccard(train, iif=True)  # with/without rating
     # UserCF.user_similarity_pearson(train, iif=False)  # with rating
     # UserCF.user_similarity_pearson(train, iif=True)  # with rating
+    # UserCF.user_similarity_adjusted_cosine(train, iif=False)  # with rating
+    # UserCF.user_similarity_adjusted_cosine(train, iif=True)  # with rating
     # UserCF.user_similarity_log_likelihood(train)  # without rating
-    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
-    # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
-    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     ItemCF.item_similarity_cosine(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_cosine(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_jaccard(train, norm=True, iuf=False, with_rating=with_rating)  # with/without rating
+    # ItemCF.item_similarity_jaccard(train, norm=False, iuf=True, with_rating=with_rating)  # with/without rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=False)  # with rating
     # ItemCF.item_similarity_adjusted_cosine(train, iuf=True)  # with rating
     # ItemCF.item_similarity__log_likelihood(train, norm=False)  # without rating
